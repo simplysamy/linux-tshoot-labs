@@ -1,0 +1,14 @@
+[Unit]
+Description=ShopApp demo web service
+After=network-online.target
+RequiresMountsFor=/srv/shopdata /var/log/shopapp
+
+[Service]
+User=shopapp
+Group=shopapp
+ExecStart=/usr/bin/python3 /opt/shopapp/app.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
