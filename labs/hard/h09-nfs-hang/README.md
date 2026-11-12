@@ -23,6 +23,65 @@
 
 Check with `sudo ./labctl.sh check h09`.
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### uptime / top - CPU
+
+```bash
+uptime                  # 1. load average: 1, 5, 15 min. Compare to the CPU count:
+nproc                   # 2. number of CPUs. load 2.0 on 2 CPUs = fully busy
+top                     # 3. live view. P = sort by CPU, M = by memory, 1 = per-CPU, q = quit
+top -bn1 | head -5      # 4. -b = batch (plain text), -n1 = one snapshot -> good for logs and pipes
+# CPU line: us=user sy=kernel ni=niced id=idle wa=waiting for disk
+```
+
+### D-state / NFS hang - look without hanging yourself
+
+```bash
+ps -eo pid,stat,cmd | awk '$2 ~ /D/'           # 1. D = stuck in the kernel (waiting for IO)
+sudo cat /proc/PID/stack | head -5             # 2. WHERE in the kernel it waits (look for nfs / sunrpc)
+findmnt -t nfs,nfs4                            # 3. SAFE: reads the mount table only (df on a dead NFS would hang!)
+timeout 5 stat -f /mnt/reports || echo hang    # 4. timeout = give up after 5 s so your shell does not freeze
+nc -vz -w3 10.0.0.10 2049                      # 5. can we even reach the NFS port? (-z scan, -v verbose, -w3 3 s)
+```
+
+### findmnt / mount - what is mounted
+
+```bash
+mount | head                         # 1. old way: long list
+findmnt                              # 2. tree of all mounts
+findmnt /srv/shopdata                # 3. one mount: source, type, options (look for ro / rw)
+findmnt -t nfs,nfs4                  # 4. -t = only these types
+findmnt -no OPTIONS /srv/shopdata    # 5. -n no header, -o choose column -> script-friendly
+```
+
+### iptables - read the firewall
+
+```bash
+sudo iptables -L                              # 1. list rules (all chains)
+sudo iptables -L INPUT                        # 2. one chain: INPUT = traffic TO this host; FORWARD = through; OUTPUT = from
+sudo iptables -L INPUT -n                     # 3. -n = numbers, no DNS (much faster)
+sudo iptables -L INPUT -n -v                  # 4. -v = packet/byte counters: does the number rise when you test? -> that rule hits
+sudo iptables -L INPUT -n -v --line-numbers   # 5. rule numbers, so you can delete/insert by number
+sudo iptables -S                              # 6. the same rules as commands (easy to copy, grep)
+# change:  -D INPUT 1  (delete rule 1)   -I INPUT 1 <rule>  (insert at top)   -A  (append at end)
+```
+
+### fstab options for network mounts
+
+```bash
+grep reports /etc/fstab               # 1. look at the line
+# _netdev  = wait for the network      nofail = do not drop to emergency mode if it is missing
+# hard     = keep retrying   x-systemd.mount-timeout=30 = give up waiting after 30 s
+sudo systemctl daemon-reload          # 2. systemd regenerates mount units from fstab
+sudo mount -o remount /mnt/reports    # 3. apply new options without unmounting
+```
+
 ## Hints
 
 <details><summary>Hint 1 - what is load?</summary>

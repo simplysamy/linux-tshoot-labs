@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linux Troubleshooting Lab - Study Guide</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --panel2:#f0f2f5; --text:#1b2230; --muted:#5c6677; --line:#dfe3ea;
+  --accent:#0d7a6b; --accent-soft:#d9f1ec; --accent-ink:#ffffff;
+  --easy:#1f8a4c; --easy-soft:#dcf3e5; --medium:#b36b00; --medium-soft:#fdecc8; --hard:#c0392b; --hard-soft:#fbdcd8;
+  --good:#1f8a4c; --good-soft:#dcf3e5; --bad:#c0392b; --bad-soft:#fbdcd8;
+  --code-bg:#0f1720; --code-fg:#d6e2f0; --code-c:#6f8aa3; --inline-code:#eaeef4;
+  --shadow:0 1px 2px rgba(16,24,40,.06),0 4px 14px rgba(16,24,40,.05);
+}
+html[data-theme=dark]{
+  --bg:#0e1319; --panel:#151c24; --panel2:#1b242e; --text:#e4eaf1; --muted:#93a1b3; --line:#27323f;
+  --accent:#3cc3ad; --accent-soft:#12352f; --accent-ink:#06211c;
+  --easy:#46c37b; --easy-soft:#13321f; --medium:#e3a53a; --medium-soft:#3a2b0d; --hard:#ef6f61; --hard-soft:#3b1814;
+  --good:#46c37b; --good-soft:#13321f; --bad:#ef6f61; --bad-soft:#3b1814;
+  --code-bg:#0a0f14; --code-fg:#d6e2f0; --code-c:#6f8aa3; --inline-code:#222d39;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--accent)}
+code,pre{font-family:ui-monospace,"Cascadia Code",SFMono-Regular,Menlo,Consolas,monospace}
+code{background:var(--inline-code);padding:.1em .35em;border-radius:5px;font-size:.88em}
+pre{background:var(--code-bg);color:var(--code-fg);padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.5;position:relative;margin:12px 0}
+pre code{background:none;padding:0;font-size:inherit;color:inherit}
+pre .c{color:var(--code-c)}
+.copy{position:absolute;top:8px;right:8px;background:#ffffff1a;color:#cfd9e5;border:0;border-radius:6px;padding:2px 9px;font-size:12px;cursor:pointer;opacity:0;transition:.15s}
+pre:hover .copy{opacity:1}
+.layout{display:flex;min-height:100vh}
+/* sidebar */
+.side{width:300px;flex:none;background:var(--panel);border-right:1px solid var(--line);height:100vh;position:sticky;top:0;display:flex;flex-direction:column}
+.side-head{padding:16px 16px 10px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;text-decoration:none;color:var(--text)}
+.brand .logo{width:30px;height:30px;border-radius:8px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:ui-monospace,monospace;font-weight:700;font-size:13px}
+.search{margin-top:12px;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--text);font:inherit;font-size:13.5px}
+.search:focus{outline:2px solid var(--accent);outline-offset:0}
+.nav{overflow:auto;padding:8px 8px 20px;flex:1}
+.nav h4{margin:14px 10px 4px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.nav a{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;color:var(--text);text-decoration:none;font-size:13.5px;line-height:1.35}
+.nav a:hover{background:var(--panel2)}
+.nav a.active{background:var(--accent-soft);color:var(--text);font-weight:600}
+.nav .id{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--muted);width:30px;flex:none}
+.nav .lvl{width:8px;height:8px;border-radius:50%;flex:none}
+.lvl.easy{background:var(--easy)}.lvl.medium{background:var(--medium)}.lvl.hard{background:var(--hard)}
+.nav .t{flex:1;min-width:0}
+.score{font-size:11px;font-weight:600;border-radius:999px;padding:1px 7px;background:var(--panel2);color:var(--muted);flex:none}
+.score.perfect{background:var(--good-soft);color:var(--good)}
+.score.partial{background:var(--medium-soft);color:var(--medium)}
+.side-foot{padding:10px 16px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:8px;padding:6px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+.btn:hover{background:var(--panel2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.small{padding:3px 10px;font-size:12.5px}
+.btn.good{border-color:var(--good);color:var(--good)}
+.btn.bad{border-color:var(--bad);color:var(--bad)}
+.btn.good.on{background:var(--good);color:#fff}
+.btn.bad.on{background:var(--bad);color:#fff}
+/* main */
+.main{flex:1;min-width:0;padding:28px clamp(16px,4vw,56px) 80px}
+.wrap{max-width:900px;margin:0 auto}
+.menu{display:none;position:fixed;top:10px;left:10px;z-index:30}
+h1{font-size:28px;line-height:1.25;margin:6px 0 10px}
+h2{font-size:20px;margin:30px 0 10px}
+h3{font-size:16.5px;margin:24px 0 8px}
+h4{font-size:15px;margin:18px 0 6px}
+.crumbs{font-size:13px;color:var(--muted)}
+.crumbs a{color:var(--muted)}
+.badge{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 9px;border-radius:999px}
+.badge.easy{background:var(--easy-soft);color:var(--easy)}.badge.medium{background:var(--medium-soft);color:var(--medium)}.badge.hard{background:var(--hard-soft);color:var(--hard)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.chip{font-size:12.5px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--muted)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:20px 0 4px;overflow:auto}
+.tabs a{padding:9px 16px;border-radius:8px 8px 0 0;text-decoration:none;color:var(--muted);font-weight:600;font-size:14px;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs a:hover{color:var(--text)}
+.tabs a.on{color:var(--accent);border-bottom-color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 22px;box-shadow:var(--shadow);margin:14px 0}
+.card>:first-child{margin-top:0}.card>:last-child{margin-bottom:0}
+blockquote{margin:12px 0;padding:12px 18px;border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 10px 10px 0}
+blockquote p{margin:6px 0}
+blockquote pre{margin:10px 0}
+.ticket{border-left-color:var(--medium);background:var(--medium-soft)}
+.tablewrap{overflow:auto;margin:12px 0}
+.cmdbox{border-left:4px solid var(--accent,#4f8cff);background:rgba(79,140,255,.06);border-radius:0 10px 10px 0;padding:6px 14px 4px;margin:10px 0 22px}
+.cmdbox .cmdhead{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;opacity:.75;margin:6px 0 0}
+.cmdbox table{font-size:13px}.cmdbox .tablewrap{margin:8px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 11px;text-align:left;vertical-align:top}
+th{background:var(--panel2)}
+details{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:8px 0;padding:0 16px}
+details summary{cursor:pointer;padding:10px 0;font-weight:600}
+details[open] summary{border-bottom:1px solid var(--line);margin-bottom:8px}
+ul,ol{padding-left:22px}
+li{margin:4px 0}
+.callout{border:1px dashed var(--accent);background:var(--accent-soft);border-radius:12px;padding:12px 18px;margin:16px 0;font-size:14px}
+.callout pre{margin:8px 0 2px}
+.gate{text-align:center;padding:34px 20px}
+.gate .big{font-size:40px}
+.nav-lab{display:flex;justify-content:space-between;gap:10px;margin-top:34px;padding-top:16px;border-top:1px solid var(--line)}
+.nav-lab a{font-size:14px}
+/* quiz */
+.qbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;margin:14px 0}
+.qbar .sum{font-weight:700}
+.q{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:14px 0;box-shadow:var(--shadow)}
+.q .qt{font-weight:600;margin-bottom:10px}
+.q .qn{color:var(--muted);font-weight:700;margin-right:6px}
+.opt{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:9px 13px;margin:7px 0;font:inherit;font-size:14.5px;cursor:pointer;line-height:1.45}
+.opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-soft);border-color:var(--good);color:var(--text)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.opt.dim{opacity:.55}
+.fb{margin-top:10px;padding:10px 14px;border-radius:10px;font-size:14px}
+.fb.ok{background:var(--good-soft);border-left:4px solid var(--good)}
+.fb.no{background:var(--bad-soft);border-left:4px solid var(--bad)}
+textarea{width:100%;min-height:84px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);padding:10px 12px;font:inherit;font-size:14px;resize:vertical}
+textarea:focus{outline:2px solid var(--accent)}
+.ans{margin-top:10px;padding:12px 14px;border-radius:10px;background:var(--accent-soft);border-left:4px solid var(--accent);font-size:14.5px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.muted{color:var(--muted)}
+/* home */
+.hero{background:linear-gradient(135deg,var(--accent-soft),var(--panel));border:1px solid var(--line);border-radius:18px;padding:26px 28px;margin-bottom:18px}
+.hero h1{margin-top:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.stat b{display:block;font-size:24px}
+.bar{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.lab-card{display:block;text-decoration:none;color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);border-top:3px solid var(--line)}
+.lab-card:hover{border-color:var(--accent)}
+.lab-card.easy{border-top-color:var(--easy)}.lab-card.medium{border-top-color:var(--medium)}.lab-card.hard{border-top-color:var(--hard)}
+.lab-card .h{display:flex;justify-content:space-between;align-items:center;font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+.lab-card .t{font-weight:600;margin:4px 0 2px;line-height:1.35}
+.lab-card .s{font-size:12.5px;color:var(--muted)}
+.opts-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px}
+.pill{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:6px 14px;font:inherit;font-size:14px;cursor:pointer}
+.pill.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.big-score{font-size:52px;font-weight:800;line-height:1.1}
+.review a{color:var(--accent)}
+@media (max-width:900px){
+  .side{position:fixed;left:0;top:0;z-index:20;transform:translateX(-102%);transition:transform .2s;box-shadow:var(--shadow);width:min(86vw,320px)}
+  body.menu-open .side{transform:none}
+  .menu{display:block}
+  .main{padding-top:56px}
+}
+@media print{
+  .side,.menu,.tabs,.copy,.nav-lab,.btn{display:none!important}
+  body{background:#fff;color:#000}.card,.q{box-shadow:none}
+}
+</style>
+</head>
+<body>
+<button class="btn menu" id="menu" aria-label="Menu">&#9776; Menu</button>
+<div class="layout">
+  <aside class="side" id="side">
+    <div class="side-head">
+      <a class="brand" href="#/home"><span class="logo">$_</span><span>Linux Troubleshooting Lab<br><small class="muted" style="font-weight:400">Study guide &amp; quiz</small></span></a>
+      <input class="search" id="search" type="search" placeholder="Filter labs (name, skill, e04...)" autocomplete="off">
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot"><span id="foot-progress"></span><button class="btn small" id="theme">Dark</button></div>
+  </aside>
+  <main class="main"><div class="wrap" id="view"></div></main>
+</div>
+
+<script id="data" type="application/json">/*__DATA__*/</script>
+<script>
+(function(){
+"use strict";
+const DATA = JSON.parse(document.getElementById('data').textContent);
+const LABS = DATA.labs;
+const BYID = Object.fromEntries(LABS.map(l => [l.id, l]));
+const LEVEL_NAME = {easy:'Easy', medium:'Medium', hard:'Hard'};
+const KEY = 'tshoot-guide-v1';
+
+/* ---------- storage ---------- */
+let store;
+try { store = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { store = {}; }
+store.quiz = store.quiz || {}; store.sol = store.sol || {}; store.exam = store.exam || {best: null, runs: 0}; store.theme = store.theme || null;
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+function qs(id){ return store.quiz[id] || (store.quiz[id] = {mcq:{}, qa:{}}); }
+
+/* ---------- helpers ---------- */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmt(s){ return esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\n/g,'<br>'); }
+function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const LETTERS = 'ABCD';
+
+function labScore(id){
+  const l = BYID[id] || DATA.method, s = qs(id);
+  const total = l.mcq.length; let done = 0, right = 0;
+  l.mcq.forEach((q, i) => { if (s.mcq[i] !== undefined) { done++; if (s.mcq[i] === 0) right++; } });
+  let qaDone = 0, qaOk = 0;
+  l.qa.forEach((q, i) => { const r = s.qa[i]; if (r && r.ok !== undefined) { qaDone++; if (r.ok) qaOk++; } });
+  return {total, done, right, qaTotal: l.qa.length, qaDone, qaOk};
+}
+function scoreBadge(id){
+  const s = labScore(id);
+  if (!s.done) return '';
+  const cls = s.done === s.total && s.right === s.total ? 'perfect' : 'partial';
+  return `<span class="score ${cls}">${s.right}/${s.total}</span>`;
+}
+function totals(){
+  let mcq = 0, done = 0, right = 0, qa = 0, qaDone = 0, qaOk = 0, perfect = 0;
+  LABS.concat([{id:'method', mcq: DATA.method.mcq, qa: DATA.method.qa}]).forEach(l => {
+    const s = labScore(l.id); mcq += s.total; done += s.done; right += s.right; qa += s.qaTotal; qaDone += s.qaDone; qaOk += s.qaOk;
+    if (l.id !== 'method' && s.done === s.total && s.right === s.total) perfect++;
+  });
+  return {mcq, done, right, qa, qaDone, qaOk, perfect};
+}
+
+/* ---------- sidebar ---------- */
+function buildNav(){
+  const f = ($('#search').value || '').trim().toLowerCase();
+  let h = `<a href="#/home" data-r="home">Home</a><a href="#/method" data-r="method"><span class="t">Troubleshooting method</span>${scoreBadge('method')}</a>`;
+  LEVELS_ORDER.forEach(lv => {
+    const items = LABS.filter(l => l.level === lv && (!f || (l.id + ' ' + l.title + ' ' + l.skills).toLowerCase().includes(f)));
+    if (!items.length) return;
+    h += `<h4>${LEVEL_NAME[lv]}</h4>` + items.map(l =>
+      `<a href="#/lab/${l.id}" data-r="lab/${l.id}"><span class="id">${l.id.toUpperCase()}</span><span class="t">${fmt(l.title)}</span>${scoreBadge(l.id)}</a>`).join('');
+  });
+  h += `<h4>Test yourself</h4><a href="#/exam" data-r="exam"><span class="t">Final exam (mixed)</span>${store.exam.best !== null ? `<span class="score perfect">${store.exam.best}%</span>` : ''}</a>`;
+  $('#nav').innerHTML = h;
+  markActive();
+  const t = totals();
+  $('#foot-progress').textContent = `Quiz: ${t.done}/${t.mcq} answered`;
+}
+const LEVELS_ORDER = ['easy', 'medium', 'hard'];
+function markActive(){
+  const r = route().join('/');
+  $$('#nav a').forEach(a => {
+    const d = a.getAttribute('data-r');
+    a.classList.toggle('active', r === d || r.startsWith(d + '/'));
+  });
+}
+
+/* ---------- routing ---------- */
+function route(){
+  const p = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  return p.length ? p : ['home'];
+}
+function go(){
+  const r = route();
+  document.body.classList.remove('menu-open');
+  const v = $('#view');
+  if (r[0] === 'lab' && BYID[r[1]]) renderLab(v, BYID[r[1]], r[2] || 'lab');
+  else if (r[0] === 'method') renderMethod(v);
+  else if (r[0] === 'exam') renderExam(v);
+  else renderHome(v);
+  decorate(v);
+  window.scrollTo(0, 0);
+  markActive();
+}
+
+/* ---------- home ---------- */
+function renderHome(v){
+  const t = totals();
+  const pct = Math.round(100 * t.done / t.mcq);
+  let h = `<div class="hero"><h1>Linux Troubleshooting Lab - Study Guide</h1>
+  <p>30 break/fix labs (10 easy, 10 medium, 10 hard) with the <strong>ticket</strong>, the <strong>senior-engineer solution</strong>, a plain-English <strong>explanation</strong> of why it works, and a <strong>quiz + Q&amp;A</strong> to check that you really understood it.</p>
+  <div class="stats">
+    <div class="stat"><b>${LABS.length}</b>labs</div>
+    <div class="stat"><b>${t.mcq}</b>multiple-choice questions</div>
+    <div class="stat"><b>${t.qa}</b>open Q&amp;A prompts</div>
+    <div class="stat"><b>${t.perfect}/${LABS.length}</b>labs with a perfect quiz<div class="bar"><i style="width:${Math.round(100*t.perfect/LABS.length)}%"></i></div></div>
+  </div>
+  <div class="row"><a class="btn primary" href="#/lab/e01">Start with E01</a><a class="btn" href="#/method">Read the method</a><a class="btn" href="#/exam">Take the final exam</a>
+  <span class="muted">Progress: ${t.done}/${t.mcq} MCQ answered (${pct}%) - saved in this browser.</span></div></div>`;
+  h += `<h2>How to use each lab page</h2><div class="card"><ol>
+    <li><strong>Lab</strong> - read the ticket and success criteria, run the lab on the VM, open hints one at a time only after ~10 minutes stuck.</li>
+    <li><strong>Solution</strong> - hidden until you click. Compare your path with the senior path.</li>
+    <li><strong>Explanation</strong> - the mental model, what to learn, and the root cause / prevention table.</li>
+    <li><strong>Quiz</strong> - 3 multiple-choice + 2 Q&amp;A questions. Write your own answer first, then reveal the model answer and mark yourself honestly.</li></ol></div>`;
+  h += `<h2>The system you will support</h2><div class="card">${DATA.home.system}</div>`;
+  h += `<h2>How to run a lab</h2><div class="card">${DATA.home.run}</div>`;
+  LEVELS_ORDER.forEach(lv => {
+    const desc = {easy:'One fault, one layer', medium:"The obvious fix doesn't work, or there are 2-3 faults", hard:'Several stacked faults, evidence needed, red herrings'}[lv];
+    h += `<h2>${LEVEL_NAME[lv]} <span class="muted" style="font-size:14px;font-weight:400">- ${desc}</span></h2><div class="grid">` +
+      LABS.filter(l => l.level === lv).map(l => `<a class="lab-card ${lv}" href="#/lab/${l.id}"><div class="h"><span>${l.id.toUpperCase()} · ${esc(l.time)}</span>${scoreBadge(l.id)}</div><div class="t">${fmt(l.title)}</div><div class="s">${fmt(l.skills)}</div></a>`).join('') + '</div>';
+  });
+  v.innerHTML = h;
+}
+
+/* ---------- method ---------- */
+function renderMethod(v){
+  v.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › Method</div><h1>How a senior SRE troubleshoots</h1>
+  <p class="muted">Tools change; the method does not. Use it in every lab.</p><div class="card">${DATA.method.html}</div>
+  <h2>Check yourself</h2>` + quizHtml('method', DATA.method);
+  bindQuiz(v, 'method', DATA.method);
+}
+
+/* ---------- lab page ---------- */
+const TABS = [['lab', 'Lab'], ['solution', 'Solution'], ['explain', 'Explanation'], ['quiz', 'Quiz & Q&A']];
+function renderLab(v, l, tab){
+  if (!TABS.some(t => t[0] === tab)) tab = 'lab';
+  const idx = LABS.indexOf(l), prev = LABS[idx - 1], next = LABS[idx + 1];
+  let h = `<div class="crumbs"><a href="#/home">Home</a> › ${LEVEL_NAME[l.level]} › ${l.id.toUpperCase()}</div>
+  <h1>${l.id.toUpperCase()} · ${fmt(l.title)}</h1>
+  <div class="chips"><span class="badge ${l.level}">${LEVEL_NAME[l.level]}</span><span class="chip">⏱ ${esc(l.time)}</span><span class="chip">🛠 ${fmt(l.skills)}</span></div>
+  <div class="tabs">${TABS.map(t => `<a href="#/lab/${l.id}/${t[0]}" class="${t[0] === tab ? 'on' : ''}">${t[1]}${t[0] === 'quiz' ? ' ' + scoreBadge(l.id) : ''}</a>`).join('')}</div>`;
+  if (tab === 'lab') {
+    h += `<h2>Ticket</h2><div class="ticket-box">${l.ticket.replace('<blockquote>', '<blockquote class="ticket">')}</div>
+    <div class="callout"><strong>Run it on the lab VM</strong>
+<pre><code>sudo ./labctl.sh start ${l.id}    # breaks the system, prints the ticket
+sudo ./labctl.sh check ${l.id}    # PASS / FAIL per item
+sudo ./labctl.sh reset ${l.id}    # undo, back to baseline</code></pre></div>
+    <h2>Success criteria</h2><div class="card">${l.success}</div>
+    ${l.warmup ? `<h2>Warm-up <span class="muted" style="font-size:14px;font-weight:400">- simple commands first, then the full ones the lab uses</span></h2><details class="warmup"><summary>Show the command ladders</summary><div>${l.warmup}</div></details>` : ''}
+    <h2>Hints <span class="muted" style="font-size:14px;font-weight:400">- open one at a time</span></h2>` +
+      l.hints.map(x => `<details><summary>${x.title}</summary>${x.html}</details>`).join('');
+  } else if (tab === 'solution') {
+    if (store.sol[l.id]) {
+      h += `<h2>Solution walkthrough</h2><div class="card">${l.solution}</div>
+      <div class="row"><button class="btn small" data-act="hide-sol">Hide solution again</button></div>`;
+    } else {
+      h += `<div class="card gate"><div class="big">🔒</div><h2 style="margin-top:6px">Try it first</h2>
+      <p class="muted">Rule of the lab: spend about ${esc(l.time)} on it and write your own incident notes before reading the senior path.</p>
+      <button class="btn primary" data-act="show-sol">Show the solution</button></div>`;
+    }
+  } else if (tab === 'explain') {
+    h += `<h2>Why it works - the mental model</h2><div class="card">${l.explain}</div>
+    <h2>What you should learn</h2><div class="card">${l.learn}</div>
+    <h2>Root cause &amp; prevention</h2><div class="card">${l.root}</div>`;
+  } else {
+    h += quizHtml(l.id, l);
+  }
+  h += `<div class="nav-lab"><span>${prev ? `<a href="#/lab/${prev.id}">← ${prev.id.toUpperCase()} ${fmt(prev.title)}</a>` : ''}</span><span>${next ? `<a href="#/lab/${next.id}">${next.id.toUpperCase()} ${fmt(next.title)} →</a>` : ''}</span></div>`;
+  v.innerHTML = h;
+  if (tab === 'quiz') bindQuiz(v, l.id, l);
+  $$('[data-act]', v).forEach(b => b.addEventListener('click', () => {
+    if (b.dataset.act === 'show-sol') store.sol[l.id] = true;
+    if (b.dataset.act === 'hide-sol') delete store.sol[l.id];
+    save(); go();
+  }));
+}
+
+/* ---------- quiz (per lab) ---------- */
+const ORDER = {};   // id:i -> shuffled original indexes (stable while the page is open)
+function order(id, i, n){ const k = id + ':' + i; return ORDER[k] || (ORDER[k] = shuffle([...Array(n).keys()])); }
+
+function quizHtml(id, l){
+  const s = qs(id);
+  let h = `<div class="qbar"><div><span class="sum" id="qsum"></span></div><button class="btn small" data-reset="${id}">Reset this quiz</button></div>
+  <h2>Multiple choice</h2>`;
+  l.mcq.forEach((q, i) => {
+    h += `<div class="q" data-mcq="${i}"><div class="qt"><span class="qn">${i + 1}.</span>${fmt(q.q)}</div>` +
+      order(id, i, q.o.length).map((o, pos) => `<button class="opt" data-o="${o}"><strong>${LETTERS[pos]}.</strong> ${fmt(q.o[o])}</button>`).join('') +
+      `<div class="fb" hidden></div></div>`;
+  });
+  h += `<h2>Q&amp;A - answer in your own words</h2><p class="muted">Write the answer (or say it out loud), then reveal the model answer and mark yourself honestly.</p>`;
+  l.qa.forEach((q, i) => {
+    h += `<div class="q" data-qa="${i}"><div class="qt"><span class="qn">Q${i + 1}.</span>${fmt(q.q)}</div>
+    <textarea placeholder="Your answer..." data-ta="${i}"></textarea>
+    <div class="row"><button class="btn small" data-show="${i}">Show model answer</button></div>
+    <div class="ans" hidden><strong>Model answer</strong><br>${fmt(q.a)}
+      <div class="row"><span class="muted">Did you cover the key points?</span><button class="btn small good" data-ok="${i}">✔ Got it</button><button class="btn small bad" data-no="${i}">✘ Missed some</button></div></div></div>`;
+  });
+  return h;
+}
+function bindQuiz(v, id, l){
+  const s = qs(id);
+  const upd = () => {
+    const sc = labScore(id);
+    $('#qsum', v).textContent = `Multiple choice ${sc.right}/${sc.total} correct (${sc.done} answered) · Q&A self-check ${sc.qaOk}/${sc.qaTotal}`;
+    buildNav();
+  };
+  function paintMcq(i, animate){
+    const box = $(`[data-mcq="${i}"]`, v), q = l.mcq[i], chosen = s.mcq[i];
+    if (chosen === undefined) return;
+    $$('.opt', box).forEach(b => {
+      const o = +b.dataset.o; b.disabled = true;
+      b.classList.toggle('right', o === 0);
+      b.classList.toggle('wrong', o === chosen && o !== 0);
+      b.classList.toggle('dim', o !== 0 && o !== chosen);
+    });
+    const fb = $('.fb', box); fb.hidden = false;
+    fb.className = 'fb ' + (chosen === 0 ? 'ok' : 'no');
+    fb.innerHTML = (chosen === 0 ? '<strong>Correct.</strong> ' : '<strong>Not quite.</strong> The right answer is highlighted. ') + fmt(q.why);
+  }
+  function paintQa(i){
+    const box = $(`[data-qa="${i}"]`, v), r = s.qa[i] || {};
+    const ta = $('textarea', box); if (r.text) ta.value = r.text;
+    if (r.shown) { $('.ans', box).hidden = false; $('[data-show]', box).hidden = true; }
+    $('[data-ok]', box).classList.toggle('on', r.ok === true);
+    $('[data-no]', box).classList.toggle('on', r.ok === false);
+  }
+  l.mcq.forEach((q, i) => paintMcq(i));
+  l.qa.forEach((q, i) => paintQa(i));
+  upd();
+  $$('.opt', v).forEach(b => b.addEventListener('click', () => {
+    const i = +b.closest('[data-mcq]').dataset.mcq;
+    if (s.mcq[i] !== undefined) return;
+    s.mcq[i] = +b.dataset.o; save(); paintMcq(i); upd();
+  }));
+  $$('[data-ta]', v).forEach(t => t.addEventListener('input', () => { const i = +t.dataset.ta; (s.qa[i] = s.qa[i] || {}).text = t.value; save(); }));
+  $$('[data-show]', v).forEach(b => b.addEventListener('click', () => { const i = +b.dataset.show; (s.qa[i] = s.qa[i] || {}).shown = true; save(); paintQa(i); }));
+  $$('[data-ok]', v).forEach(b => b.addEventListener('click', () => { const i = +b.dataset.ok; (s.qa[i] = s.qa[i] || {}).ok = true; s.qa[i].shown = true; save(); paintQa(i); upd(); }));
+  $$('[data-no]', v).forEach(b => b.addEventListener('click', () => { const i = +b.dataset.no; (s.qa[i] = s.qa[i] || {}).ok = false; s.qa[i].shown = true; save(); paintQa(i); upd(); }));
+  $('[data-reset]', v).addEventListener('click', () => {
+    if (!confirm('Reset your answers for this quiz?')) return;
+    delete store.quiz[id]; Object.keys(ORDER).filter(k => k.startsWith(id + ':')).forEach(k => delete ORDER[k]); save(); go();
+  });
+}
+
+/* ---------- final exam ---------- */
+let EX = null;   // running exam state
+function allQuestions(scope){
+  const out = [];
+  LABS.forEach(l => { if (scope === 'all' || scope === l.level) l.mcq.forEach(q => out.push({lab: l.id, level: l.level, q})); });
+  if (scope === 'all' || scope === 'method') DATA.method.mcq.forEach(q => out.push({lab: 'method', level: 'method', q}));
+  return out;
+}
+function renderExam(v){
+  if (EX && EX.done) return examResult(v);
+  if (EX) return examQuestion(v);
+  const best = store.exam.best;
+  v.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › Final exam</div><h1>Final exam</h1>
+  <p class="muted">Mixed multiple-choice questions drawn from all labs, in random order with shuffled answers. You get feedback after every question and a review list at the end.${best !== null ? ` Your best score: <strong>${best}%</strong> (${store.exam.runs} attempt${store.exam.runs === 1 ? '' : 's'}).` : ''}</p>
+  <div class="card"><h3 style="margin-top:0">Scope</h3><div class="opts-row" id="scope">
+    ${[['all', 'All labs + method'], ['easy', 'Easy'], ['medium', 'Medium'], ['hard', 'Hard'], ['method', 'Method only']].map((s, i) => `<button class="pill ${i === 0 ? 'on' : ''}" data-scope="${s[0]}">${s[1]}</button>`).join('')}</div>
+  <h3>Number of questions</h3><div class="opts-row" id="count">${[10, 20, 30, 0].map((n, i) => `<button class="pill ${i === 0 ? 'on' : ''}" data-n="${n}">${n || 'All'}</button>`).join('')}</div>
+  <button class="btn primary" id="start">Start exam</button></div>`;
+  let scope = 'all', n = 10;
+  $$('#scope .pill', v).forEach(b => b.addEventListener('click', () => { scope = b.dataset.scope; $$('#scope .pill', v).forEach(x => x.classList.toggle('on', x === b)); }));
+  $$('#count .pill', v).forEach(b => b.addEventListener('click', () => { n = +b.dataset.n; $$('#count .pill', v).forEach(x => x.classList.toggle('on', x === b)); }));
+  $('#start', v).addEventListener('click', () => {
+    let pool = shuffle(allQuestions(scope));
+    if (n && n < pool.length) pool = pool.slice(0, n);
+    EX = {pool, i: 0, answers: [], done: false, scope, opts: pool.map(p => shuffle([...Array(p.q.o.length).keys()]))};
+    go();
+  });
+}
+function examQuestion(v){
+  const p = EX.pool[EX.i], q = p.q, ans = EX.answers[EX.i], ord = EX.opts[EX.i];
+  const lab = BYID[p.lab];
+  v.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › Final exam</div>
+  <div class="qbar"><span class="sum">Question ${EX.i + 1} of ${EX.pool.length}</span><button class="btn small" id="quit">Quit exam</button></div>
+  <div class="bar"><i style="width:${Math.round(100 * EX.i / EX.pool.length)}%"></i></div>
+  <div class="q"><div class="qt"><span class="chip">${lab ? lab.id.toUpperCase() + ' · ' + LEVEL_NAME[lab.level] : 'Method'}</span><br><br>${fmt(q.q)}</div>
+  ${ord.map((o, pos) => `<button class="opt" data-o="${o}"><strong>${LETTERS[pos]}.</strong> ${fmt(q.o[o])}</button>`).join('')}<div class="fb" hidden></div>
+  <div class="row" id="nextrow" hidden><button class="btn primary" id="next">${EX.i + 1 === EX.pool.length ? 'Finish' : 'Next question →'}</button></div></div>`;
+  function paint(){
+    $$('.opt', v).forEach(b => { const o = +b.dataset.o; b.disabled = true; b.classList.toggle('right', o === 0); b.classList.toggle('wrong', o === ans && o !== 0); b.classList.toggle('dim', o !== 0 && o !== ans); });
+    const fb = $('.fb', v); fb.hidden = false; fb.className = 'fb ' + (ans === 0 ? 'ok' : 'no');
+    fb.innerHTML = (ans === 0 ? '<strong>Correct.</strong> ' : '<strong>Not quite.</strong> ') + fmt(q.why);
+    $('#nextrow', v).hidden = false;
+  }
+  if (ans !== undefined) paint();
+  $$('.opt', v).forEach(b => b.addEventListener('click', () => { if (EX.answers[EX.i] !== undefined) return; EX.answers[EX.i] = +b.dataset.o; paint(); }));
+  $('#next', v).addEventListener('click', () => { if (EX.i + 1 === EX.pool.length) EX.done = true; else EX.i++; go(); });
+  $('#quit', v).addEventListener('click', () => { if (confirm('Quit this exam?')) { EX = null; go(); } });
+}
+function examResult(v){
+  const total = EX.pool.length, right = EX.answers.filter(a => a === 0).length, pct = Math.round(100 * right / total);
+  if (!EX.saved) { EX.saved = true; store.exam.runs++; if (store.exam.best === null || pct > store.exam.best) store.exam.best = pct; save(); buildNav(); }
+  const byLevel = {};
+  EX.pool.forEach((p, i) => { const k = p.level; (byLevel[k] = byLevel[k] || {t: 0, r: 0}); byLevel[k].t++; if (EX.answers[i] === 0) byLevel[k].r++; });
+  const missed = EX.pool.map((p, i) => ({p, i})).filter(x => EX.answers[x.i] !== 0);
+  const verdict = pct >= 90 ? 'Excellent - you could run the incident.' : pct >= 70 ? 'Solid. Review the misses below.' : 'Keep going - redo the labs you missed and retry.';
+  v.innerHTML = `<div class="crumbs"><a href="#/home">Home</a> › Final exam</div><h1>Result</h1>
+  <div class="card"><div class="big-score">${pct}%</div><p><strong>${right}</strong> of <strong>${total}</strong> correct. ${verdict}</p>
+  <div class="chips">${Object.keys(byLevel).map(k => `<span class="chip">${k}: ${byLevel[k].r}/${byLevel[k].t}</span>`).join('')}</div>
+  <div class="row"><button class="btn primary" id="again">Take another exam</button></div></div>
+  <h2>Review ${missed.length ? 'what you missed' : ''}</h2>` +
+  (missed.length ? missed.map(x => { const q = x.p.q, lab = BYID[x.p.lab], got = EX.answers[x.i];
+    return `<div class="q review"><div class="qt">${fmt(q.q)}</div><div class="fb no"><strong>Your answer:</strong> ${fmt(q.o[got])}</div>
+    <div class="fb ok" style="margin-top:8px"><strong>Correct:</strong> ${fmt(q.o[0])}<br>${fmt(q.why)}</div>
+    <div class="row">${lab ? `<a href="#/lab/${lab.id}/explain">Review ${lab.id.toUpperCase()} - ${fmt(lab.title)}</a>` : '<a href="#/method">Review the method</a>'}</div></div>`; }).join('')
+   : '<div class="card">Nothing missed - perfect run.</div>');
+  $('#again', v).addEventListener('click', () => { EX = null; go(); });
+}
+
+/* ---------- code copy buttons ---------- */
+function decorate(v){
+  $$('pre', v).forEach(pre => {
+    if ($('.copy', pre)) return;
+    const b = document.createElement('button'); b.className = 'copy'; b.textContent = 'Copy';
+    b.addEventListener('click', () => {
+      const t = $('code', pre).innerText;
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy', 1200); }, () => {});
+    });
+    pre.appendChild(b);
+  });
+}
+
+/* ---------- theme / menu / init ---------- */
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  $('#theme').textContent = t === 'dark' ? 'Light' : 'Dark';
+}
+const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+applyTheme(store.theme || (prefersDark ? 'dark' : 'light'));
+$('#theme').addEventListener('click', () => { store.theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; save(); applyTheme(store.theme); });
+$('#menu').addEventListener('click', () => document.body.classList.toggle('menu-open'));
+$('#search').addEventListener('input', buildNav);
+window.addEventListener('hashchange', () => { buildNav(); go(); });
+buildNav();
+go();
+})();
+</script>
+</body>
+</html>

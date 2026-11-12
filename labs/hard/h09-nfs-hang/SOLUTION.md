@@ -1,11 +1,16 @@
 # H09 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Confirm safely
 
 ```bash
 uptime                                          # load average: 9.1, 6.0, 2.4
 top -bn1 | head -5                              # %Cpu(s): 98 id
-ps -eo pid,stat,etime,wchan:32,cmd | awk 'NR==1 || $2 ~ /D/'
+ps -eo pid,stat,cmd                                                    # 1. state of every process
+ps -eo pid,stat,etime,wchan:32,cmd                                     # 2. + age, + kernel function it waits in
+ps -eo pid,stat,etime,wchan:32,cmd | awk 'NR==1 || $2 ~ /D/'          # 3. keep header (NR==1) + rows in state D
 #   PID STAT  ELAPSED WCHAN                            CMD
 #  8101 D       07:12 rpc_wait_bit_killable            df -h
 #  8120 D       06:01 rpc_wait_bit_killable            /bin/bash /usr/local/bin/report-export

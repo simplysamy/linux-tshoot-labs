@@ -1,5 +1,8 @@
 # M01 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. See the mismatch
 
 ```bash
@@ -10,7 +13,9 @@ sudo du -sh /var/log/shopapp    # only a few MB
 ## 2. Find the hidden space
 
 ```bash
-sudo lsof -nP +L1 /var/log/shopapp
+sudo lsof /var/log/shopapp               # 1. who has files open there
+sudo lsof +L1 /var/log/shopapp           # 2. + only files with link count < 1 (deleted)
+sudo lsof -nP +L1 /var/log/shopapp       # 3. + no DNS/port-name lookups (faster)
 # COMMAND   PID    USER  FD  TYPE DEVICE  SIZE/OFF NLINK NODE NAME
 # log-shipp 3120 shopapp  3w  REG    7,0 209715200     0   14 /var/log/shopapp/shipper-spool.log (deleted)
 ```

@@ -1,5 +1,8 @@
 # M08 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Confirm
 
 ```bash

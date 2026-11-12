@@ -1,17 +1,25 @@
 # M09 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Reproduce
 
 ```bash
-curl -v --resolve shop.lab.internal:443:127.0.0.1 --cacert /etc/ssl/shopapp/lab-ca.crt https://shop.lab.internal/
+curl https://shop.lab.internal/                                                              # 1. fails: name unknown
+curl --resolve shop.lab.internal:443:127.0.0.1 https://shop.lab.internal/                    # 2. + name -> 127.0.0.1
+curl --resolve shop.lab.internal:443:127.0.0.1 --cacert /etc/ssl/shopapp/lab-ca.crt https://shop.lab.internal/   # 3. + trust the lab CA
+curl -v --resolve shop.lab.internal:443:127.0.0.1 --cacert /etc/ssl/shopapp/lab-ca.crt https://shop.lab.internal/   # 4. + -v shows the TLS error
 # * SSL certificate problem: certificate has expired
 ```
 
 ## 2. What is served?
 
 ```bash
+openssl s_client -connect 127.0.0.1:443 -servername shop.lab.internal              # 1. connect, shows the cert chain (waits for input)
+openssl s_client -connect 127.0.0.1:443 -servername shop.lab.internal </dev/null   # 2. </dev/null = no input, exits at once
 openssl s_client -connect 127.0.0.1:443 -servername shop.lab.internal </dev/null 2>/dev/null \
-  | openssl x509 -noout -subject -dates
+  | openssl x509 -noout -subject -dates                # 3. keep the cert only, print who + validity
 # subject=CN = shop.lab.internal
 # notBefore=... 2024
 # notAfter=Nov  7 09:12:00 2026 GMT       <- 3 days ago

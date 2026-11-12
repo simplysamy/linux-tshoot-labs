@@ -14,6 +14,43 @@
 - Public names resolve (`getent ahosts ubuntu.com`)
 - `example.com` resolves to its real address and `curl https://example.com` works
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### ping / dig / getent - names and addresses
+
+```bash
+ping 8.8.8.8                       # 1. is the network reachable? (Ctrl-C to stop)
+ping -c2 8.8.8.8                   # 2. -c2 = send 2 and stop
+ping -c2 ubuntu.com                # 3. same, by name: tests DNS + network
+dig ubuntu.com                     # 4. ask DNS directly (shows the whole answer)
+dig +short ubuntu.com              # 5. only the answer
+dig @8.8.8.8 +short ubuntu.com     # 6. @server = ask THAT server instead of the default
+getent hosts ubuntu.com            # 7. resolve like programs do (/etc/hosts first, then DNS)
+```
+
+### ls -l / cat - is resolv.conf a file or a symlink?
+
+```bash
+cat /etc/resolv.conf                 # 1. which DNS server do programs use?
+ls -l /etc/resolv.conf               # 2. a leading 'l' and '->' mean symlink; '-' means plain file
+resolvectl status                    # 3. what systemd-resolved itself uses
+resolvectl status | grep -A2 'DNS Servers'    # 4. only the DNS part
+grep hosts /etc/nsswitch.conf        # 5. the lookup ORDER programs use (files = /etc/hosts, dns = DNS servers)
+```
+
+### ln - symlinks
+
+```bash
+ln -s TARGET LINKNAME                # 1. LINKNAME now points to TARGET
+ln -sf TARGET LINKNAME               # 2. -f = replace LINKNAME if it exists
+readlink -f LINKNAME                 # 3. where does it really point?
+```
+
 ## Hints
 
 <details><summary>Hint 1 - network or DNS?</summary>

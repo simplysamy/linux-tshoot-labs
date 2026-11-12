@@ -20,6 +20,54 @@
 
 Check with `sudo ./labctl.sh check h10`.
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### curl - talk to a web service
+
+```bash
+curl http://localhost/                                   # 1. fetch a page, print the body
+curl -s http://localhost/                                # 2. -s = silent (no progress bar)
+curl -s -o /dev/null http://localhost/                   # 3. -o /dev/null = throw the body away
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost/   # 4. -w = print only the HTTP status code
+curl -v http://localhost/                                # 5. -v = verbose: shows connect, headers (debug)
+curl -s -o /dev/null -w '%{http_code} %{time_total}s\n' --max-time 5 http://localhost/   # 6. + timing, + give up after 5 s
+```
+
+### uptime / top - CPU
+
+```bash
+uptime                  # 1. load average: 1, 5, 15 min. Compare to the CPU count:
+nproc                   # 2. number of CPUs. load 2.0 on 2 CPUs = fully busy
+top                     # 3. live view. P = sort by CPU, M = by memory, 1 = per-CPU, q = quit
+top -bn1 | head -5      # 4. -b = batch (plain text), -n1 = one snapshot -> good for logs and pipes
+# CPU line: us=user sy=kernel ni=niced id=idle wa=waiting for disk
+```
+
+### cgroups - limits systemd puts on a service
+
+```bash
+systemctl show -p MemoryMax -p TasksMax -p CPUQuotaPerSecUSec nginx   # 1. limits systemd configured
+systemd-cgtop -n 1                              # 2. top, but per cgroup/service
+cat /sys/fs/cgroup/system.slice/nginx.service/cpu.max   # 3. the kernel's number: 'max 100000' = no cap, '5000 100000' = 5% of one CPU
+cat /sys/fs/cgroup/system.slice/nginx.service/cpu.stat  # 4. nr_throttled rising = the cap is biting
+systemd-delta --type=extended                   # 5. every drop-in override on the host
+```
+
+### systemctl show / cat - ask systemd for facts
+
+```bash
+systemctl cat nginx                              # 1. the unit file(s) systemd really uses, incl. drop-ins
+systemctl show nginx                             # 2. every property (long)
+systemctl show -p User nginx                     # 3. -p = just one property
+systemctl show -p User -p MainPID nginx          # 4. several
+systemctl show -p MainPID --value nginx          # 5. --value = print only the value (for scripts)
+```
+
 ## Hints
 
 <details><summary>Hint 1 - host idle != process has CPU</summary>

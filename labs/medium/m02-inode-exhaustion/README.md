@@ -17,6 +17,44 @@
 - `/health` returns 200
 - The root cause is fixed, so it does not come back
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### df - which filesystem is full?
+
+```bash
+df                          # 1. every filesystem, sizes in 1 KB blocks (hard to read)
+df -h                       # 2. -h = human units (M, G)
+df -h /var/log              # 3. give a path: only the filesystem that holds it
+df -i /var/log              # 4. -i = inodes (file *count*) instead of bytes
+```
+
+### find - search by name, size, age
+
+```bash
+find /var/log                                   # 1. everything below, one path per line
+find /var/log -type f                           # 2. only regular files (f); d = directories
+find /var/log -type f -name '*.log'             # 3. add a name pattern (quote it!)
+find /var/log -type f -size +1M                 # 4. bigger than 1 MB (+ = more than)
+find /var/log -type f -mmin +60                 # 5. modified more than 60 minutes ago (-60 = less than)
+find /var/log -xdev -type f -size +1M           # 6. -xdev = stay on one filesystem
+find /var/log -xdev -type f -size +1M -exec ls -lh {} +   # 7. run a command on all hits ({} = the files)
+# find ... -delete deletes. ALWAYS run it first without -delete, count with | wc -l, then add it.
+```
+
+### du --inodes - where are the many files?
+
+```bash
+ls /srv/shopdata/sessions | head                 # 1. look at a few names first
+ls -lt /srv/shopdata/sessions | head             # 2. -t = newest first
+du --inodes /srv/shopdata                        # 3. count files (inodes) per directory instead of bytes
+du --inodes -x /srv/shopdata | sort -n | tail -3 # 4. biggest file-count last
+```
+
 ## Hints
 
 <details><summary>Hint 1 - two kinds of "space"</summary>

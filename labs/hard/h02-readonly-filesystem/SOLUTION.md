@@ -1,5 +1,8 @@
 # H02 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Confirm
 
 ```bash
@@ -16,7 +19,9 @@ touch /srv/shopdata/x                        # Read-only file system
 journalctl -k --since "1 hour ago" | grep -iE 'ext4|remount'
 # EXT4-fs error (device loop1): ext4_lookup:1855: inode #13: comm cat: deleted inode referenced: 14
 # EXT4-fs (loop1): Remounting filesystem read-only
-sudo dumpe2fs -h /dev/loop1 2>/dev/null | grep -iE 'state|error'
+sudo dumpe2fs -h /dev/loop1                                   # 1. filesystem header
+sudo dumpe2fs -h /dev/loop1 2>/dev/null                       # 2. hide the version banner (stderr)
+sudo dumpe2fs -h /dev/loop1 2>/dev/null | grep -iE 'state|error'   # 3. only state / error lines
 # Filesystem state:         clean with errors
 # FS Error count:           1
 # Last error function:      ext4_lookup

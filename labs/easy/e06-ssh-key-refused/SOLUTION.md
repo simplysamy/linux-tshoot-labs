@@ -1,11 +1,18 @@
 # E06 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Reproduce
 
 ```bash
-sudo ssh -i /var/lib/tshoot/e06/deploy_key -o StrictHostKeyChecking=no deploy@127.0.0.1 hostname
+sudo ssh deploy@127.0.0.1                                  # 1. plain login (asks for a key/password)
+sudo ssh -i /var/lib/tshoot/e06/deploy_key deploy@127.0.0.1                       # 2. + this private key
+sudo ssh -i /var/lib/tshoot/e06/deploy_key deploy@127.0.0.1 hostname              # 3. + run one command, then exit
+sudo ssh -i /var/lib/tshoot/e06/deploy_key -o StrictHostKeyChecking=no deploy@127.0.0.1 hostname   # 4. + skip host-key prompt (lab only)
 # deploy@127.0.0.1: Permission denied (publickey).
-sudo ssh -v -i /var/lib/tshoot/e06/deploy_key deploy@127.0.0.1 2>&1 | grep -E 'Offering|Authentications'
+sudo ssh -v -i /var/lib/tshoot/e06/deploy_key deploy@127.0.0.1                    # 5. -v = debug output (long)
+sudo ssh -v -i /var/lib/tshoot/e06/deploy_key deploy@127.0.0.1 2>&1 | grep -E 'Offering|Authentications'   # 6. keep only the useful lines (2>&1 = merge stderr into the pipe)
 # debug1: Offering public key: /var/lib/tshoot/e06/deploy_key ED25519 ...
 # debug1: Authentications that can continue: publickey
 ```

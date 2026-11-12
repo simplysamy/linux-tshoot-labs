@@ -1,10 +1,15 @@
 # M10 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Test as the user
 
 ```bash
 curl -s localhost/health                                      # OK  (misleading)
-sudo ip netns exec mon-ns curl -sv --max-time 5 http://10.210.0.1/health
+curl http://10.210.0.1/health                                         # 1. from THIS host (not what the monitor sees)
+sudo ip netns exec mon-ns curl http://10.210.0.1/health               # 2. same, run INSIDE the monitor's namespace
+sudo ip netns exec mon-ns curl -sv --max-time 5 http://10.210.0.1/health   # 3. + silent progress, + verbose, + give up after 5 s
 # * Connection timed out after 5001 milliseconds
 ```
 

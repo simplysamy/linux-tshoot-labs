@@ -1,12 +1,18 @@
 # M03 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Size the problem
 
 ```bash
 uptime            # load average: 2.10, 1.80, 1.05   (with nproc = 2 -> fully busy)
 nproc
 top -o %CPU       # python3 processes at ~100% each
-ps -eo pid,ppid,user,ni,%cpu,etime,cmd --sort=-%cpu | head -5
+ps -ef                                                    # 1. all processes
+ps -eo pid,ppid,user,%cpu,cmd                             # 2. choose columns
+ps -eo pid,ppid,user,%cpu,cmd --sort=-%cpu                # 3. + highest CPU first
+ps -eo pid,ppid,user,ni,%cpu,etime,cmd --sort=-%cpu | head -5   # 4. + nice value, run time, only top 5
 #  PID  PPID USER NI %CPU ELAPSED CMD
 # 4102  4100 root  0 99.5   01:12 /usr/bin/python3 /usr/local/bin/shopapp-reindex
 # 4103  4100 root  0 99.1   01:12 /usr/bin/python3 /usr/local/bin/shopapp-reindex
@@ -38,7 +44,8 @@ Disable the scheduler **first**, then kill:
 sudo sed -i 's/^\* \* \* \* \* root/# DISABLED INC-2003 runaway CPU, see ticket\n#* * * * * root/' /etc/cron.d/shopapp-reindex
 cat /etc/cron.d/shopapp-reindex
 pgrep -af shopapp-reindex                       # ALWAYS look before pkill -f
-sudo pkill -f '^/usr/bin/python3 /usr/local/bin/shopapp-reindex'
+pgrep -af shopapp-reindex                                      # 1. LOOK first: which processes match?
+sudo pkill -f '^/usr/bin/python3 /usr/local/bin/shopapp-reindex'   # 2. kill exactly those (^ = match from the start of the command line)
 sleep 2; pgrep -af shopapp-reindex || echo "gone"
 ```
 

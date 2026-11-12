@@ -1,5 +1,8 @@
 # E04 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. IP or DNS?
 
 ```bash
@@ -15,8 +18,10 @@ ls -l /etc/resolv.conf
 cat /etc/resolv.conf
 # nameserver 10.255.255.53                        <-- dead server
 dig ubuntu.com                      # ;; connection timed out; no servers could be reached
-dig @127.0.0.53 ubuntu.com +short   # systemd-resolved still works
-resolvectl status | grep -A2 'DNS Servers'
+dig @127.0.0.53 ubuntu.com           # 1. ask one specific server (127.0.0.53 = systemd-resolved)
+dig @127.0.0.53 ubuntu.com +short    # 2. only the answer: systemd-resolved still works
+resolvectl status                    # 1. everything systemd-resolved knows
+resolvectl status | grep -A2 'DNS Servers'   # 2. -A2 = the match + 2 lines after it
 ```
 
 ## 3. Fix fault 1 - give resolv.conf back to systemd-resolved

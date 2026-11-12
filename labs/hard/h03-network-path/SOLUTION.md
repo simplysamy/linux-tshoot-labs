@@ -1,5 +1,8 @@
 # H03 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 Shortcuts used below:
 
 ```bash
@@ -27,7 +30,9 @@ $C curl -s --max-time 3 10.200.0.2:9000      # timeout
 ## 3. Fault 1 - the router does not forward
 
 ```bash
-sudo tcpdump -ni h-cl icmp &                 # requests arrive from client...
+sudo tcpdump -i h-cl                          # 1. everything (noisy)
+sudo tcpdump -ni h-cl                         # 2. + no name lookups
+sudo tcpdump -ni h-cl icmp &                  # 3. + only ping, + background (&): requests arrive from client...
 sudo tcpdump -ni h-ap icmp                   # ...but nothing leaves to app side
 sysctl net.ipv4.ip_forward                   # = 0
 sudo sysctl -w net.ipv4.ip_forward=1
@@ -57,7 +62,10 @@ ICMP works but TCP 9000 does not -> something filters by port.
 ## 5. Fault 3 - the firewall on the router
 
 ```bash
-sudo iptables -L FORWARD -nv --line-numbers
+sudo iptables -L FORWARD                      # 1. rules in the FORWARD chain (traffic THROUGH this router)
+sudo iptables -L FORWARD -n                   # 2. + numbers only
+sudo iptables -L FORWARD -nv                  # 3. + packet counters
+sudo iptables -L FORWARD -nv --line-numbers   # 4. + rule numbers
 # num pkts bytes target prot ... dpt:9000 /* SEC-204 block legacy admin port */
 #  1     6   360  DROP   tcp  ...
 ```

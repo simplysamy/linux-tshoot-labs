@@ -1,5 +1,8 @@
 # M04 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. How does it die?
 
 ```bash
@@ -16,7 +19,10 @@ journalctl -u cache-warmer -n 20 --no-pager
 ## 2. Kernel view
 
 ```bash
-journalctl -k --since "5 min ago" | grep -iE 'oom|killed process'
+journalctl -k                                          # 1. kernel messages
+journalctl -k --since "5 min ago"                      # 2. recent only
+journalctl -k --since "5 min ago" | grep -i oom        # 3. only OOM lines
+journalctl -k --since "5 min ago" | grep -iE 'oom|killed process'   # 4. -E = this OR that
 # Memory cgroup out of memory: Killed process 5120 (python3) total-vm:..., anon-rss:163000kB ...
 #   oom-kill:constraint=CONSTRAINT_MEMCG ... task_memcg=/system.slice/cache-warmer.service
 free -m             # host has lots of free RAM -> this is a cgroup limit, not the host

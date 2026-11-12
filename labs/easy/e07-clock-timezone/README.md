@@ -19,6 +19,36 @@
 
 Check with `sudo ./labctl.sh check e07`.
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### date / timedatectl - clocks
+
+```bash
+date                                   # 1. local time
+date -u                                # 2. -u = UTC
+timedatectl                            # 3. local + UTC + time zone + 'System clock synchronized'
+timedatectl timesync-status            # 4. which NTP server, offset
+sudo timedatectl set-timezone Etc/UTC  # 5. change zone
+sudo timedatectl set-ntp true          # 6. turn time sync on
+```
+
+### head / tail / wc / sort - shape output
+
+```bash
+tail file                       # 1. last 10 lines
+tail -n 3 file                  # 2. last 3
+tail -f file                    # 3. -f = follow: keep printing new lines (Ctrl-C to stop)
+head -n 5 file                  # 4. first 5 lines
+sort file | uniq -c             # 5. count identical lines (sort first, uniq needs neighbours)
+sort file | uniq -c | sort -rn | head   # 6. most frequent first
+wc -l file                      # 7. count lines
+```
+
 ## Hints
 
 <details><summary>Hint 1 - one command shows it all</summary>

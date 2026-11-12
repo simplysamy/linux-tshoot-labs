@@ -17,6 +17,55 @@
 - The real cause stopped **or** limited so it cannot hurt the box, and it won't come back unconstrained
 - You can explain with numbers why batch-encoder was *not* the cause
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### uptime / top - CPU
+
+```bash
+uptime                  # 1. load average: 1, 5, 15 min. Compare to the CPU count:
+nproc                   # 2. number of CPUs. load 2.0 on 2 CPUs = fully busy
+top                     # 3. live view. P = sort by CPU, M = by memory, 1 = per-CPU, q = quit
+top -bn1 | head -5      # 4. -b = batch (plain text), -n1 = one snapshot -> good for logs and pipes
+# CPU line: us=user sy=kernel ni=niced id=idle wa=waiting for disk
+```
+
+### free / vmstat - memory and swap
+
+```bash
+free                    # 1. memory in KB
+free -m                 # 2. in MB; read the 'available' column, not 'free'
+vmstat                  # 3. one summary line since boot
+vmstat 1 5              # 4. a line per second, 5 times (ignore the first line)
+# columns: r=runnable b=blocked si/so=swap in/out wa=CPU waiting for disk. si/so > 0 for long = swapping.
+```
+
+### iostat / pidstat - disk activity
+
+```bash
+iostat                          # 1. summary since boot
+iostat -x 1 3                   # 2. -x = extended (utilisation, latency), every 1 s, 3 times
+iostat -xz 1 3                  # 3. -z = hide idle devices
+sudo pidstat -d 1 5             # 4. -d = disk IO per PROCESS, every 1 s, 5 times
+ps -eo pid,stat,wchan:22,cmd | awk '$2 ~ /D/'   # 5. D = uninterruptible sleep = waiting for IO
+# %util near 100 and high await = the disk is the bottleneck.
+```
+
+### systemctl + journalctl - service state and logs
+
+```bash
+systemctl status nginx                          # 1. state, last exit code, last log lines
+systemctl is-active nginx                       # 2. one word: active / failed / inactive
+journalctl -u nginx                             # 3. the whole log of one unit (-u = unit)
+journalctl -u nginx -n 20                       # 4. only the last 20 lines
+journalctl -u nginx -n 20 --no-pager            # 5. print straight to the terminal (no less)
+journalctl -u nginx --since "10 min ago"        # 6. time window instead of line count
+```
+
 ## Hints
 
 <details><summary>Hint 1 - look at all resources, not only CPU</summary>

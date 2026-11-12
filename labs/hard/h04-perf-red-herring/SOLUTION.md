@@ -1,5 +1,8 @@
 # H04 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. First 60 seconds - whole system view
 
 ```bash
@@ -32,10 +35,13 @@ A nice 19 task yields to any nice 0 task. It cannot make the shell feel slow.
 ## 3. Find the disk and the process
 
 ```bash
-iostat -xz 1 3
+iostat                  # 1. summary since boot
+iostat -x               # 2. + extended columns: %util, await
+iostat -xz 1 3          # 3. + hide idle disks, every 1 s, 3 times
 # Device  r/s   w/s   wkB/s  w_await  aqu-sz  %util
 # sda     0.0  950   3800    1.0      0.95    98.0     <-- saturated with tiny writes
-sudo pidstat -d 1 5
+sudo pidstat -d         # 1. disk IO per process, one sample
+sudo pidstat -d 1 5     # 2. every 1 s, 5 times
 #  UID  PID  kB_rd/s kB_wr/s kB_ccwr/s iodelay Command
 #    0 3310     0.00 3800.00     0.00     95  dd
 ps -eo pid,stat,wchan:22,cmd | awk '$2 ~ /D/'

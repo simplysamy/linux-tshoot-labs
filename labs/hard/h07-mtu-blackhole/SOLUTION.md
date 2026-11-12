@@ -1,5 +1,8 @@
 # H07 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 Shortcut used below: `C="sudo ip netns exec cust-ns"`, `V="sudo ip netns exec vpn-ns"`, `D="sudo ip netns exec dc-ns"`.
 
 ## 1. Reproduce

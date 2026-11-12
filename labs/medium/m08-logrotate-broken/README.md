@@ -21,6 +21,39 @@
 
 Check with `sudo ./labctl.sh check m08`.
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### logrotate - test a rule safely
+
+```bash
+cat /etc/logrotate.d/nginx                      # 1. read an existing rule first
+sudo logrotate -d /etc/logrotate.d/nginx        # 2. -d = debug / dry run: prints what it WOULD do, changes nothing
+sudo logrotate -v /etc/logrotate.d/nginx        # 3. -v = really run (only if due), verbose
+sudo logrotate -vf /etc/logrotate.d/nginx       # 4. -f = force now, even if not due
+```
+
+### lsof - who has this file open?
+
+```bash
+lsof                                  # 1. every open file of every process (huge)
+lsof /var/log/syslog                  # 2. only processes that have THIS file open
+lsof -p 1234                          # 3. everything process 1234 has open
+lsof +L1                              # 4. open files with link count < 1 = deleted but still open
+lsof -nP +L1 /var/log                 # 5. -n/-P = no DNS / port-name lookups (faster); limit to one filesystem
+```
+
+### ls -lh / ls -ld - sizes and directory modes
+
+```bash
+ls -lh /var/log/shopapp/             # 1. file sizes in human units
+ls -ld /var/log/shopapp              # 2. the DIRECTORY's own mode and owner
+```
+
 ## Hints
 
 <details><summary>Hint 1 - dry run</summary>

@@ -16,6 +16,51 @@
 - `catalog/products.db` restored from backup, owned by `shopapp`
 - `/health` returns 200
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### findmnt / mount - what is mounted
+
+```bash
+mount | head                         # 1. old way: long list
+findmnt                              # 2. tree of all mounts
+findmnt /srv/shopdata                # 3. one mount: source, type, options (look for ro / rw)
+findmnt -t nfs,nfs4                  # 4. -t = only these types
+findmnt -no OPTIONS /srv/shopdata    # 5. -n no header, -o choose column -> script-friendly
+```
+
+### dmesg / journalctl -k - the kernel's messages
+
+```bash
+dmesg                           # 1. kernel ring buffer (needs sudo on some systems)
+dmesg -T                        # 2. -T = readable timestamps
+sudo dmesg -T | tail -5         # 3. only the newest lines
+journalctl -k --since "1 hour ago"    # 4. kernel log from the journal, time window
+journalctl -k | grep -iE 'oom|ext4'   # 5. filter for what you suspect
+```
+
+### fuser / umount - free the mount point
+
+```bash
+cd /                                    # 1. make sure YOUR shell is not inside the mount
+sudo fuser -vm /srv/shopdata            # 2. who uses it? (-v verbose, -m everything on that mount)
+sudo systemctl stop shopapp             # 3. stop the user of the mount, then
+sudo umount /srv/shopdata               # 4. unmount
+```
+
+### fsck - check a filesystem (unmounted!)
+
+```bash
+sudo umount /srv/shopdata               # 1. a filesystem must not be mounted while you repair it
+sudo e2fsck -n /path/to.img             # 2. -n = read-only check, answer 'no' to everything: SAFE dry run
+sudo e2fsck -f /path/to.img             # 3. -f = force a full check; it asks before each repair (y)
+sudo dumpe2fs -h /path/to.img | grep -i state   # 4. -h = header only: 'clean' or 'not clean'
+```
+
 ## Hints
 
 <details><summary>Hint 1 - why read-only?</summary>

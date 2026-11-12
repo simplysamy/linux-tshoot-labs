@@ -7,6 +7,18 @@ show where you practise it.
 Tip: `man <command>` is the full reference; `<command> --help` is the short one;
 `tldr <command>` (if installed) gives examples.
 
+**Reading a long command.** Never type a long command in one go. Start with the bare command, run it,
+then add one flag or one `|` at a time and run it again after each step:
+
+```bash
+du /var/log                          # bare: works, but noisy
+du -h /var/log                       # + human sizes
+du -h --max-depth=1 /var/log         # + one level deep
+du -xh --max-depth=1 /var/log | sort -h   # + stay on one filesystem, + sort: biggest last
+```
+
+Each lab README has a **Warm-up** section with these ladders for the commands that lab uses.
+
 ## Contents
 
 0. [The first 60 seconds](#0-the-first-60-seconds)

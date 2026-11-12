@@ -1,5 +1,8 @@
 # E08 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. What does systemd say?
 
 ```bash
@@ -32,7 +35,9 @@ Note: `sudo /usr/local/bin/shopapp-report` also fails - sudo uses its own `secur
 
 **a) Full path in the script** (simplest, explicit):
 ```bash
-sudo sed -i 's#^\( *\)shopctl #\1/opt/shoptools/bin/shopctl #' /usr/local/bin/shopapp-report
+sed 's#shopctl #/opt/shoptools/bin/shopctl #' /usr/local/bin/shopapp-report   # 1. simplest idea: preview the change (file untouched)
+sed 's#^\( *\)shopctl #\1/opt/shoptools/bin/shopctl #' /usr/local/bin/shopapp-report   # 2. only at line start; \( *\) keeps the indentation as \1
+sudo sed -i 's#^\( *\)shopctl #\1/opt/shoptools/bin/shopctl #' /usr/local/bin/shopapp-report   # 3. -i = write it into the file
 ```
 
 **b) Set PATH for the unit** (no script change):

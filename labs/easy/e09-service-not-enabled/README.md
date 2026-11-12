@@ -18,6 +18,24 @@
 
 Check with `sudo ./labctl.sh check e09`.
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### systemctl - enabled vs active
+
+```bash
+systemctl is-active shopapp          # 1. running now?
+systemctl is-enabled shopapp         # 2. starts at boot? (enabled / disabled / static)
+systemctl cat shopapp                # 3. the unit file(s) systemd really uses
+sudo systemctl daemon-reload         # 4. after editing a unit file, tell systemd to re-read it
+sudo systemctl enable shopapp        # 5. start it at boot
+systemctl list-dependencies multi-user.target | grep shopapp   # 6. is it really pulled in at boot?
+```
+
 ## Hints
 
 <details><summary>Hint 1 - running is not enabled</summary>

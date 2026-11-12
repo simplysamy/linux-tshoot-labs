@@ -1,9 +1,14 @@
 # H10 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Confirm
 
 ```bash
-for i in 1 2 3 4 5; do curl -s -o /dev/null -w '%{http_code} %{time_total}s\n' localhost/; done
+curl localhost/                                                       # 1. one request
+curl -s -o /dev/null -w '%{http_code} %{time_total}s\n' localhost/    # 2. just status + total time
+for i in 1 2 3 4 5; do curl -s -o /dev/null -w '%{http_code} %{time_total}s\n' localhost/; done   # 3. repeat 5 times
 # 200 2.913s
 # 200 3.402s
 # 504 10.001s

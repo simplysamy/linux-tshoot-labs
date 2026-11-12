@@ -23,6 +23,56 @@
 
 Check with `sudo ./labctl.sh check h06`.
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### curl - talk to a web service
+
+```bash
+curl http://localhost/                                   # 1. fetch a page, print the body
+curl -s http://localhost/                                # 2. -s = silent (no progress bar)
+curl -s -o /dev/null http://localhost/                   # 3. -o /dev/null = throw the body away
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost/   # 4. -w = print only the HTTP status code
+curl -v http://localhost/                                # 5. -v = verbose: shows connect, headers (debug)
+curl -s -o /dev/null -w '%{http_code} %{time_total}s\n' --max-time 5 http://localhost/   # 6. + timing, + give up after 5 s
+```
+
+### ss -s / TIME_WAIT - socket states
+
+```bash
+ss -s                                          # 1. totals per state: estab, timewait ...
+ss -tan state time-wait | head                 # 2. list TIME_WAIT sockets (-a all, -t tcp, -n numeric)
+ss -tan state time-wait | awk 'NR>1{print $4}' | cut -d: -f2 | sort -n | sed -n '1p;$p'
+                                               # 3. smallest and largest LOCAL port in use (awk col 4, cut port, sort, sed 1p;$p = first;last)
+sysctl net.ipv4.ip_local_port_range            # 4. how many local ports exist for outgoing connections
+```
+
+### sysctl - read and change kernel settings
+
+```bash
+sysctl vm.swappiness                    # 1. read one setting
+sysctl -a | grep swappiness             # 2. list all, filter (when you do not know the exact name)
+sudo sysctl -w vm.swappiness=60         # 3. -w = set NOW (lost at reboot)
+cat /etc/sysctl.d/*.conf                # 4. where permanent values live
+sudo sysctl --system                    # 5. re-read all files; the LAST file wins on a conflict
+```
+
+### ps / pgrep / pstree - look at processes
+
+```bash
+ps                                         # 1. only your shell
+ps -ef                                     # 2. every process, full format (PID, PPID, command)
+ps -fp 1234                                # 3. just one PID
+ps -eo pid,ppid,user,%cpu,%mem,cmd         # 4. -o = choose your own columns
+ps -eo pid,%cpu,cmd --sort=-%cpu | head    # 5. sort by CPU, highest first (- = descending), top 10
+pgrep -af nginx                            # 6. find PIDs by name (-a = show full command, -f = match whole command line)
+pstree -ps 1234                            # 7. parent chain of one PID: who started it?
+```
+
 ## Hints
 
 <details><summary>Hint 1 - which error, from which component?</summary>

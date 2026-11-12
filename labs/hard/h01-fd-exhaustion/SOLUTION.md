@@ -1,5 +1,8 @@
 # H01 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Confirm and capture evidence **before** restarting
 
 A restart destroys the evidence. Look first.
@@ -21,9 +24,14 @@ The process reached its fd limit. Why the high CPU? The listening socket is
 ## 2. What are the fds?
 
 ```bash
-sudo ls -l /proc/$PID/fd | awk '{print $NF}' | sort | uniq -c | sort -rn | head
+sudo ls -l /proc/$PID/fd                                       # 1. each fd and where it points
+sudo ls -l /proc/$PID/fd | awk '{print $NF}'                   # 2. keep only the last column (the target)
+sudo ls -l /proc/$PID/fd | awk '{print $NF}' | sort | uniq -c  # 3. group and count identical targets
+sudo ls -l /proc/$PID/fd | awk '{print $NF}' | sort | uniq -c | sort -rn | head   # 4. most frequent first
 #  56 /srv/shopdata/trace.log         <-- same file opened 56 times = leak
-sudo strace -f -p $PID -e trace=openat,close -o /tmp/st.txt &   # watch one request
+sudo strace -p $PID                                              # 1. every system call (noisy)
+sudo strace -p $PID -e trace=openat,close                       # 2. only open/close
+sudo strace -f -p $PID -e trace=openat,close -o /tmp/st.txt &   # 3. + threads, + write to a file, + background (&)
 curl -s --max-time 2 localhost:8080/ ; sudo kill %1
 grep trace.log /tmp/st.txt          # openat ... trace.log ... and no close()
 ```

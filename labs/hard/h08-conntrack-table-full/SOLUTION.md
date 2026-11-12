@@ -1,5 +1,8 @@
 # H08 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Confirm the pattern
 
 ```bash
@@ -38,7 +41,10 @@ CHG-830 lowered the table size to 1024.
 ## 4. Who fills it?
 
 ```bash
-sudo conntrack -L -p tcp 2>/dev/null | grep -o 'dport=[0-9]*' | sort | uniq -c | sort -rn | head -3
+sudo conntrack -L -p tcp 2>/dev/null                       # 1. every tracked TCP connection
+sudo conntrack -L -p tcp 2>/dev/null | grep -o 'dport=[0-9]*'   # 2. keep only dport=NNN (-o = print only the match)
+sudo conntrack -L -p tcp 2>/dev/null | grep -o 'dport=[0-9]*' | sort | uniq -c   # 3. count per port
+sudo conntrack -L -p tcp 2>/dev/null | grep -o 'dport=[0-9]*' | sort | uniq -c | sort -rn | head -3   # 4. top 3
 #   1480 dport=9100
 #      4 dport=22
 ss -tnp state established '( dport = :9100 )' | head -3     # users:(("python3",pid=...)) - metrics-scraper

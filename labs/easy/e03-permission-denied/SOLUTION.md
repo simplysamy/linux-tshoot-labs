@@ -1,9 +1,13 @@
 # E03 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Find the failing layer
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' localhost/    # 502 -> nginx up, backend down
+curl localhost/                                       # 1. the body: an error page
+curl -s -o /dev/null -w '%{http_code}\n' localhost/    # 2. just the status code: 502 -> nginx up, backend down
 systemctl status shopapp
 # Active: activating (auto-restart) (Result: exit-code) ... status=2
 journalctl -u shopapp -n 5 --no-pager

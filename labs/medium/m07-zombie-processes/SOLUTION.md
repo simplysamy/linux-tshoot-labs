@@ -1,12 +1,17 @@
 # M07 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Confirm
 
 ```bash
 journalctl -u queue-dispatcher -n 5 --no-pager
 # queue-dispatcher[6100]: ERROR fork failed: [Errno 11] Resource temporarily unavailable
 ps -eo stat | grep -c '^Z'          # ~149
-ps -eo pid,ppid,stat,cmd | awk '$3 ~ /Z/' | head -3
+ps -eo pid,ppid,stat,cmd                              # 1. all processes with state
+ps -eo pid,ppid,stat,cmd | awk '$3 ~ /Z/'             # 2. awk: keep rows whose 3rd column contains Z
+ps -eo pid,ppid,stat,cmd | awk '$3 ~ /Z/' | head -3   # 3. first three
 #  6230  6100 Z    [python3] <defunct>
 #  6231  6100 Z    [python3] <defunct>
 ```

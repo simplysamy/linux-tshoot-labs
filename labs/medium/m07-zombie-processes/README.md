@@ -20,6 +20,46 @@
 
 Check with `sudo ./labctl.sh check m07`.
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### ps / pgrep / pstree - look at processes
+
+```bash
+ps                                         # 1. only your shell
+ps -ef                                     # 2. every process, full format (PID, PPID, command)
+ps -fp 1234                                # 3. just one PID
+ps -eo pid,ppid,user,%cpu,%mem,cmd         # 4. -o = choose your own columns
+ps -eo pid,%cpu,cmd --sort=-%cpu | head    # 5. sort by CPU, highest first (- = descending), top 10
+pgrep -af nginx                            # 6. find PIDs by name (-a = show full command, -f = match whole command line)
+pstree -ps 1234                            # 7. parent chain of one PID: who started it?
+```
+
+### pipes - building a one-liner step by step
+
+```bash
+ps -eo stat                                   # 1. one column of states
+ps -eo stat | grep Z                          # 2. keep lines containing Z
+ps -eo stat | grep -c '^Z'                    # 3. -c = count them; ^ = at line start
+ps -eo pid,ppid,stat,cmd | awk '$3 ~ /Z/'     # 4. awk: print lines where column 3 matches Z
+watch -n1 'ps -eo stat | grep -c "^Z"'        # 5. watch -n1 = re-run every second, live view
+# Rule: build a pipeline one stage at a time, run it after each |, and look at the output.
+```
+
+### systemctl show / cat - ask systemd for facts
+
+```bash
+systemctl cat nginx                              # 1. the unit file(s) systemd really uses, incl. drop-ins
+systemctl show nginx                             # 2. every property (long)
+systemctl show -p User nginx                     # 3. -p = just one property
+systemctl show -p User -p MainPID nginx          # 4. several
+systemctl show -p MainPID --value nginx          # 5. --value = print only the value (for scripts)
+```
+
 ## Hints
 
 <details><summary>Hint 1 - what is a zombie?</summary>

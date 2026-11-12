@@ -72,6 +72,7 @@ sudo ./labctl.sh reset e01       # undo everything, back to a healthy baseline
 
 Rules for students:
 
+0. **Do the Warm-up first.** Every lab README has a *Warm-up* section: each command built from its simplest form, one flag at a time. Long command lines in `SOLUTION.md` are built the same way (`# 1.`, `# 2.` ...).
 1. **Don't read `break.sh` or `SOLUTION.md` first.** In production nobody tells you what broke.
 2. Use the hints in the lab `README.md` one at a time, only after ~10 minutes stuck.
 3. Write incident notes while you work (template above). The notes are the real deliverable.

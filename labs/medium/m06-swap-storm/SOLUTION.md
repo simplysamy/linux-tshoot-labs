@@ -1,5 +1,8 @@
 # M06 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Confirm: CPU idle, but the box is slow
 
 ```bash
@@ -26,7 +29,9 @@ free -m
 ## 2. Who uses the memory?
 
 ```bash
-ps -eo pid,user,rss,cmd --sort=-rss | head
+ps -eo pid,user,rss,cmd                  # 1. rss = RAM actually used (KB)
+ps -eo pid,user,rss,cmd --sort=-rss      # 2. biggest first
+ps -eo pid,user,rss,cmd --sort=-rss | head   # 3. top 10
 # 5121 root 182340 /usr/bin/python3 /usr/local/bin/report-builder
 # 5122 root 179112 /usr/bin/python3 /usr/local/bin/report-builder
 # ... 10 workers

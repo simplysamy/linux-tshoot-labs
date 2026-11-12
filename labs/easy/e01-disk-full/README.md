@@ -19,6 +19,56 @@
 
 Check with `sudo ./labctl.sh check e01`.
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### df - which filesystem is full?
+
+```bash
+df                          # 1. every filesystem, sizes in 1 KB blocks (hard to read)
+df -h                       # 2. -h = human units (M, G)
+df -h /var/log              # 3. give a path: only the filesystem that holds it
+df -i /var/log              # 4. -i = inodes (file *count*) instead of bytes
+```
+
+### du - what is using the space?
+
+```bash
+du /var/log                          # 1. size of every directory below (1 KB blocks)
+du -h /var/log                       # 2. human units
+du -sh /var/log                      # 3. -s = one summary line for the whole tree
+du -h --max-depth=1 /var/log         # 4. one level deep: a size per child
+du -xh --max-depth=1 /var/log        # 5. -x = do not cross into other mounted filesystems
+du -xh --max-depth=1 /var/log | sort -h   # 6. pipe to sort -h: biggest ends up last
+```
+
+### find - search by name, size, age
+
+```bash
+find /var/log                                   # 1. everything below, one path per line
+find /var/log -type f                           # 2. only regular files (f); d = directories
+find /var/log -type f -name '*.log'             # 3. add a name pattern (quote it!)
+find /var/log -type f -size +1M                 # 4. bigger than 1 MB (+ = more than)
+find /var/log -type f -mmin +60                 # 5. modified more than 60 minutes ago (-60 = less than)
+find /var/log -xdev -type f -size +1M           # 6. -xdev = stay on one filesystem
+find /var/log -xdev -type f -size +1M -exec ls -lh {} +   # 7. run a command on all hits ({} = the files)
+# find ... -delete deletes. ALWAYS run it first without -delete, count with | wc -l, then add it.
+```
+
+### lsof - who has this file open?
+
+```bash
+lsof                                  # 1. every open file of every process (huge)
+lsof /var/log/syslog                  # 2. only processes that have THIS file open
+lsof -p 1234                          # 3. everything process 1234 has open
+lsof +L1                              # 4. open files with link count < 1 = deleted but still open
+lsof -nP +L1 /var/log                 # 5. -n/-P = no DNS / port-name lookups (faster); limit to one filesystem
+```
+
 ## Hints
 
 <details><summary>Hint 1 - confirm the alert</summary>

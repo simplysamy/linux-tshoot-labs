@@ -1,5 +1,8 @@
 # M02 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Confirm and look at both kinds of space
 
 ```bash
@@ -13,7 +16,9 @@ df -i /srv/shopdata
 ## 2. Where are the files?
 
 ```bash
-sudo du --inodes -x /srv/shopdata | sort -n | tail -3
+sudo du --inodes /srv/shopdata                          # 1. file count per directory
+sudo du --inodes -x /srv/shopdata | sort -n             # 2. -x one filesystem, sort by count
+sudo du --inodes -x /srv/shopdata | sort -n | tail -3   # 3. only the 3 biggest
 # 4070  /srv/shopdata/sessions
 ls /srv/shopdata/sessions | head
 ls -lt /srv/shopdata/sessions | head      # newest first: sess_live_* are recent
@@ -23,7 +28,10 @@ ls -lt /srv/shopdata/sessions | head      # newest first: sess_live_* are recent
 
 ```bash
 # older than 24h (1440 minutes), only regular files named sess_*
-sudo find /srv/shopdata/sessions -type f -name 'sess_*' -mmin +1440 | wc -l     # ~4000
+sudo find /srv/shopdata/sessions -type f                                    # 1. all files
+sudo find /srv/shopdata/sessions -type f -name 'sess_*'                     # 2. + name pattern
+sudo find /srv/shopdata/sessions -type f -name 'sess_*' -mmin +1440         # 3. + older than 1440 min (24 h)
+sudo find /srv/shopdata/sessions -type f -name 'sess_*' -mmin +1440 | wc -l     # 4. count them (dry run): ~4000
 sudo find /srv/shopdata/sessions -type f -name 'sess_*' -mmin -1440 | wc -l     # 40 live
 sudo find /srv/shopdata/sessions -type f -name 'sess_*' -mmin +1440 -delete
 df -i /srv/shopdata

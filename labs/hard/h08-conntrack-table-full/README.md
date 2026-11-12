@@ -24,6 +24,65 @@
 
 Check with `sudo ./labctl.sh check h08`.
 
+## Warm-up: build the commands up from simple
+
+The solution uses long command lines. They are just short commands with one flag added at a time.
+Practise each ladder on any Linux box first (all read-only). Every rung adds **one** thing to the
+rung above - stop at the rung you understand, and read the next one only when you are ready.
+The lab itself uses the last rung of each ladder.
+
+### curl - talk to a web service
+
+```bash
+curl http://localhost/                                   # 1. fetch a page, print the body
+curl -s http://localhost/                                # 2. -s = silent (no progress bar)
+curl -s -o /dev/null http://localhost/                   # 3. -o /dev/null = throw the body away
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost/   # 4. -w = print only the HTTP status code
+curl -v http://localhost/                                # 5. -v = verbose: shows connect, headers (debug)
+curl -s -o /dev/null -w '%{http_code} %{time_total}s\n' --max-time 5 http://localhost/   # 6. + timing, + give up after 5 s
+```
+
+### dmesg / journalctl -k - the kernel's messages
+
+```bash
+dmesg                           # 1. kernel ring buffer (needs sudo on some systems)
+dmesg -T                        # 2. -T = readable timestamps
+sudo dmesg -T | tail -5         # 3. only the newest lines
+journalctl -k --since "1 hour ago"    # 4. kernel log from the journal, time window
+journalctl -k | grep -iE 'oom|ext4'   # 5. filter for what you suspect
+```
+
+### conntrack - the kernel connection table
+
+```bash
+sudo conntrack -C                                # 1. how many entries now (-C = count)
+sysctl net.netfilter.nf_conntrack_max            # 2. the limit
+sudo conntrack -S | head -2                      # 3. statistics; 'drop' / 'early_drop' rising = table full
+sudo conntrack -L -p tcp | head                  # 4. list entries (-p tcp)
+sudo conntrack -L -p tcp 2>/dev/null | grep -o 'dport=[0-9]*' | sort | uniq -c | sort -rn | head -3   # 5. who fills it? count per destination port
+```
+
+### sysctl - read and change kernel settings
+
+```bash
+sysctl vm.swappiness                    # 1. read one setting
+sysctl -a | grep swappiness             # 2. list all, filter (when you do not know the exact name)
+sudo sysctl -w vm.swappiness=60         # 3. -w = set NOW (lost at reboot)
+cat /etc/sysctl.d/*.conf                # 4. where permanent values live
+sudo sysctl --system                    # 5. re-read all files; the LAST file wins on a conflict
+```
+
+### ss - who is listening / connected?
+
+```bash
+ss                              # 1. all sockets (long)
+ss -l                           # 2. -l = only listening sockets
+ss -lt                          # 3. -t = TCP only
+ss -ltn                         # 4. -n = numbers, no name lookup
+ss -ltnp                        # 5. -p = which process owns each socket (needs sudo)
+ss -ltnp 'sport = :80'          # 6. filter: only source (local) port 80
+```
+
 ## Hints
 
 <details><summary>Hint 1 - no app log? ask the kernel</summary>

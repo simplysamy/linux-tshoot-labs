@@ -1,5 +1,8 @@
 # E01 - Solution
 
+> Long commands below are built up short-first (`# 1.`, `# 2.` ...). Each rung adds one flag;
+> the last rung is what the lab uses. The README **Warm-up** explains every flag from scratch.
+
 ## 1. Confirm the symptom
 
 ```bash
@@ -14,7 +17,9 @@ so only this app is hit.
 The journal shows the app failing to write:
 
 ```bash
-journalctl -u shopapp --since "10 min ago" | tail
+journalctl -u shopapp                          # 1. whole log of the unit
+journalctl -u shopapp --since "10 min ago"     # 2. only the last 10 minutes
+journalctl -u shopapp --since "10 min ago" | tail   # 3. only the newest lines of those
 # --- Logging error ---
 # OSError: [Errno 28] No space left on device
 ```
@@ -22,8 +27,12 @@ journalctl -u shopapp --since "10 min ago" | tail
 ## 2. Find what is big
 
 ```bash
-sudo du -xh --max-depth=1 /var/log/shopapp | sort -h
-sudo find /var/log/shopapp -xdev -type f -size +20M -exec ls -lh {} +
+sudo du -h /var/log/shopapp                              # 1. size of every directory
+sudo du -h --max-depth=1 /var/log/shopapp                # 2. one level only
+sudo du -xh --max-depth=1 /var/log/shopapp | sort -h     # 3. stay on this filesystem, biggest last
+
+sudo find /var/log/shopapp -type f -size +20M            # 1. files over 20 MB
+sudo find /var/log/shopapp -xdev -type f -size +20M -exec ls -lh {} +   # 2. + one filesystem, + owner/size
 # -rw-r--r-- 1 shopapp shopapp 200M ... /var/log/shopapp/debug-trace.log
 ```
 
