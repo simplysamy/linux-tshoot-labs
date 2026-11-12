@@ -34,23 +34,10 @@ Every lab uses the same small "production" stack, so you learn the system the wa
 
 ## Setup
 
-### Option A - Vagrant (recommended)
-
-Needs [Vagrant](https://developer.hashicorp.com/vagrant) + VirtualBox (or Hyper-V).
+Use any Ubuntu 22.04 / 24.04 machine (the labs deliberately break it, so use a throwaway one).
 
 ```bash
-vagrant up
-vagrant ssh
-cd /lab
-sudo ./labctl.sh list
-```
-
-Broke the VM beyond repair? `vagrant destroy -f && vagrant up`. That is the point of a lab VM.
-
-### Option B - any throwaway Ubuntu 22.04 / 24.04 VM
-
-```bash
-# copy this folder to the VM, then:
+# copy this folder to the machine, then:
 sudo bash setup/install-base.sh
 ```
 
